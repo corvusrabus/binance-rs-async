@@ -1,5 +1,6 @@
 use std::collections::BTreeMap;
 use std::fmt;
+use rust_decimal::Decimal;
 
 use serde::Serializer;
 
@@ -45,37 +46,37 @@ where
 }
 
 /// Serialize opt bool as str
-fn serialize_opt_as_uppercase<S, T>(t: &Option<T>, serializer: S) -> std::result::Result<S::Ok, S::Error>
-where
-    S: Serializer,
-    T: ToString,
-{
-    match *t {
-        Some(ref v) => serializer.serialize_some(&v.to_string().to_uppercase()),
-        None => serializer.serialize_none(),
-    }
-}
+// fn serialize_opt_as_uppercase<S, T>(t: &Option<T>, serializer: S) -> std::result::Result<S::Ok, S::Error>
+// where
+//     S: Serializer,
+//     T: ToString,
+// {
+//     match *t {
+//         Some(ref v) => serializer.serialize_some(&v.to_string().to_uppercase()),
+//         None => serializer.serialize_none(),
+//     }
+// }
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct OrderRequest {
     pub symbol: String,
     pub side: OrderSide,
-    pub position_side: Option<PositionSide>,
+    // pub position_side: Option<PositionSide>,
     #[serde(rename = "type")]
     pub order_type: OrderType,
     pub time_in_force: Option<TimeInForce>,
     #[serde(rename = "quantity")]
-    pub qty: Option<f64>,
-    pub reduce_only: Option<bool>,
-    pub price: Option<f64>,
-    pub stop_price: Option<f64>,
-    pub close_position: Option<bool>,
-    pub activation_price: Option<f64>,
-    pub callback_rate: Option<f64>,
-    pub working_type: Option<WorkingType>,
-    #[serde(serialize_with = "serialize_opt_as_uppercase")]
-    pub price_protect: Option<bool>,
+    pub qty: Option<Decimal>,
+    // pub reduce_only: Option<bool>,
+    pub price: Option<Decimal>,
+    // pub stop_price: Option<f64>,
+    // pub close_position: Option<bool>,
+    // pub activation_price: Option<f64>,
+    // pub callback_rate: Option<f64>,
+    // pub working_type: Option<WorkingType>,
+    // #[serde(serialize_with = "serialize_opt_as_uppercase")]
+    // pub price_protect: Option<bool>,
 }
 
 #[derive(Serialize)]
@@ -86,113 +87,38 @@ struct ChangePositionModeRequest {
 }
 
 impl FuturesAccount {
-    async fn post_order(&self, order: OrderRequest) -> Result<Transaction> {
+     async fn post_order(&self, order: OrderRequest) -> Result<Transaction> {
         self.client
             .post_signed_p("/fapi/v1/order", order, self.recv_window)
             .await
     }
 
-    pub async fn limit_buy(
+    pub async fn limit_order(
         &self,
-        symbol: impl Into<String>,
-        qty: impl Into<f64>,
-        price: f64,
+        symbol: String,
+        qty: Decimal,
+        price: Decimal,
+        is_sell: bool,
         time_in_force: TimeInForce,
     ) -> Result<Transaction> {
+        let side = if is_sell {
+            OrderSide::Sell
+        } else {
+            OrderSide::Buy
+        };
+
         let order = OrderRequest {
-            symbol: symbol.into(),
-            side: OrderSide::Buy,
-            position_side: None,
+            symbol: symbol,
+            side,
             order_type: OrderType::Limit,
             time_in_force: Some(time_in_force),
-            qty: Some(qty.into()),
-            reduce_only: None,
+            qty: Some(qty),
             price: Some(price),
-            stop_price: None,
-            close_position: None,
-            activation_price: None,
-            callback_rate: None,
-            working_type: None,
-            price_protect: None,
         };
         self.post_order(order).await
     }
 
-    pub async fn limit_sell(
-        &self,
-        symbol: impl Into<String>,
-        qty: impl Into<f64>,
-        price: f64,
-        time_in_force: TimeInForce,
-    ) -> Result<Transaction> {
-        let order = OrderRequest {
-            symbol: symbol.into(),
-            side: OrderSide::Sell,
-            position_side: None,
-            order_type: OrderType::Limit,
-            time_in_force: Some(time_in_force),
-            qty: Some(qty.into()),
-            reduce_only: None,
-            price: Some(price),
-            stop_price: None,
-            close_position: None,
-            activation_price: None,
-            callback_rate: None,
-            working_type: None,
-            price_protect: None,
-        };
-        self.post_order(order).await
-    }
 
-    // Place a MARKET order - BUY
-    pub async fn market_buy<S, F>(&self, symbol: S, qty: F) -> Result<Transaction>
-    where
-        S: Into<String>,
-        F: Into<f64>,
-    {
-        let order = OrderRequest {
-            symbol: symbol.into(),
-            side: OrderSide::Buy,
-            position_side: None,
-            order_type: OrderType::Market,
-            time_in_force: None,
-            qty: Some(qty.into()),
-            reduce_only: None,
-            price: None,
-            stop_price: None,
-            close_position: None,
-            activation_price: None,
-            callback_rate: None,
-            working_type: None,
-            price_protect: None,
-        };
-        self.post_order(order).await
-    }
-
-    // Place a MARKET order - SELL
-    pub async fn market_sell<S, F>(&self, symbol: S, qty: F) -> Result<Transaction>
-    where
-        S: Into<String>,
-        F: Into<f64>,
-    {
-        let order: OrderRequest = OrderRequest {
-            symbol: symbol.into(),
-            side: OrderSide::Sell,
-            position_side: None,
-            order_type: OrderType::Market,
-            time_in_force: None,
-            qty: Some(qty.into()),
-            reduce_only: None,
-            price: None,
-            stop_price: None,
-            close_position: None,
-            activation_price: None,
-            callback_rate: None,
-            working_type: None,
-            price_protect: None,
-        };
-        self.post_order(order).await
-    }
 
     /// Place a cancellation order
     pub async fn cancel_order(&self, o: OrderCancellation) -> Result<CanceledOrder> {

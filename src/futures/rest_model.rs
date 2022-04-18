@@ -1,5 +1,7 @@
+use chrono::{ DateTime, Utc};
+use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
-
+use chrono::serde::ts_milliseconds;
 use crate::rest_model::{string_or_float, string_or_float_opt, Asks, Bids, RateLimit, SymbolStatus, TimeInForce};
 pub use crate::rest_model::{BookTickers, KlineSummaries, KlineSummary, ServerTime, SymbolPrice, Tickers};
 
@@ -319,37 +321,39 @@ pub struct OpenInterest {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Transaction {
-    pub client_order_id: String,
-    #[serde(with = "string_or_float")]
-    pub cum_qty: f64,
-    #[serde(with = "string_or_float")]
-    pub cum_quote: f64,
-    #[serde(with = "string_or_float")]
-    pub executed_qty: f64,
+    // pub client_order_id: String,
+    // #[serde(with = "string_or_float")]
+    // pub cum_qty: f64,
+    // #[serde(with = "string_or_float")]
+    // pub cum_quote: f64,
+    // #[serde(with = "string_or_float")]
+    // pub executed_qty: f64,
     pub order_id: u64,
-    #[serde(with = "string_or_float")]
-    pub avg_price: f64,
-    #[serde(with = "string_or_float")]
-    pub orig_qty: f64,
-    pub reduce_only: bool,
+    // #[serde(with = "string_or_float")]
+    // pub avg_price: f64,
+    // #[serde(with = "string_or_float")]
+    pub orig_qty: Decimal,
+    pub price : Decimal,
+    // pub reduce_only: bool,
     pub side: String,
-    pub position_side: String,
+    // pub position_side: String,
     pub status: String,
-    #[serde(with = "string_or_float")]
-    pub stop_price: f64,
-    pub close_position: bool,
+    // #[serde(with = "string_or_float")]
+    // pub stop_price: f64,
+    // pub close_position: bool,
     pub symbol: String,
-    pub time_in_force: String,
-    #[serde(rename = "type")]
-    pub type_name: String,
-    pub orig_type: String,
-    #[serde(default, with = "string_or_float_opt")]
-    pub activate_price: Option<f64>,
-    #[serde(default, with = "string_or_float_opt")]
-    pub price_rate: Option<f64>,
-    pub update_time: u64,
-    pub working_type: String,
-    price_protect: bool,
+    // pub time_in_force: String,
+    // #[serde(rename = "type")]
+    // pub type_name: String,
+    // pub orig_type: String,
+    // #[serde(default, with = "string_or_float_opt")]
+    // pub activate_price: Option<f64>,
+    // #[serde(default, with = "string_or_float_opt")]
+    // pub price_rate: Option<f64>,
+    #[serde(with = "ts_milliseconds")]
+    pub update_time: DateTime<Utc>,
+    // pub working_type: String,
+    // price_protect: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

@@ -102,6 +102,7 @@ impl Client {
         let request = build_signed_request_p(payload, recv_window)?;
         let string = self.post_signed(endpoint, &request).await?;
         let data: &str = string.as_str();
+        // println!("{}", data);
         let t = from_str(data)?;
         Ok(t)
     }
