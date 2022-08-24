@@ -87,5 +87,9 @@ pub mod rest_model;
 #[cfg(feature = "savings_api")]
 pub mod savings;
 pub mod userstream;
+#[cfg(feature = "ws")]
+
 pub mod websockets;
+#[cfg(feature = "ws")]
+
 pub mod ws_model;

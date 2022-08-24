@@ -148,7 +148,7 @@ impl<'a, WE: serde::de::DeserializeOwned> WebSockets<'a, WE> {
                         let event: WE = from_str(msg.as_str())?;
                         (self.handler)(event)?;
                     }
-                    Message::Ping(_) | Message::Pong(_) | Message::Binary(_) => {}
+                    Message::Ping(_) | Message::Pong(_) | Message::Binary(_) | Message::Frame(_)=> {}
                     Message::Close(e) => {
                         return Err(Error::Msg(format!("Disconnected {:?}", e)));
                     }

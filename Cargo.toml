@@ -23,7 +23,7 @@ futures_api = []
 margin_api = []
 savings_api = []
 all_apis = ["futures_api", "margin_api", "savings_api"]
-
+ws = ["tokio/net"]
 [dependencies]
 chrono = {version = "0.4.22", features = ["serde"]}
 #chrono  = {version = "0.4.20-beta.1", features = ["serde"]}
@@ -39,8 +39,11 @@ thiserror = "1.0"
 url = "2.2"
 lazy_static = "1.4"
 tokio-tungstenite = "^0.17"
-tokio = { version = "1.20", features = ["full"] }
-rust_decimal = "1.23.1"
+rust_decimal = "1.25"
+
+tokio = { version = "1.20" ,optional = true}
+
+
 [dev-dependencies]
 csv = "1.1"
 env_logger = "0.9"
